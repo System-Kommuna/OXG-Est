@@ -1,0 +1,134 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Selectors for triggers (using unique IDs - most reliable!)
+    const flotillasTrigger = document.querySelector('#flotillas');
+    const contactoTrigger = document.querySelector('#contacto');
+
+    // Selectors for dropdown content (using classes)
+    // NOTE: If you add an ID to the Flotillas dropdown content (e.g., id="flotillas-dropdown-content"),
+    // update this line to: const flotillasDropdown = document.querySelector('#flotillas-dropdown-content');
+    const flotillasDropdown = document.querySelector('.hidemenu'); 
+    const contactoDropdown = document.querySelector('.hidemenu._2nd'); 
+
+    // Corrected navbar class
+    const navbar = document.querySelector('.nav'); 
+
+    const MIN_WIDTH = 992;
+    let isDesktopBehaviorActive = false;
+
+    // Exit early if essential elements are not found
+    if (!flotillasTrigger || !contactoTrigger || !flotillasDropdown || !contactoDropdown || !navbar) {
+        console.warn("One or more required menu elements not found. Desktop menu behavior may not work.");
+        // Log details for debugging missing elements
+        if (!flotillasTrigger) console.warn("Missing: #flotillas trigger");
+        if (!contactoTrigger) console.warn("Missing: #contacto trigger");
+        if (!flotillasDropdown) console.warn("Missing: .hidemenu (for Flotillas dropdown content). Ensure it's the first .hidemenu or assign a unique ID.");
+        if (!contactoDropdown) console.warn("Missing: .hidemenu._2nd (for Contacto dropdown content)");
+        if (!navbar) console.warn("Missing: .nav (main navbar container)");
+        return;
+    }
+
+    // Function to open a dropdown (desktop specific)
+    function openDropdown(dropdownElement) {
+        if (dropdownElement) {
+            dropdownElement.style.transform = 'translate3d(0px, 0px, 0px)';
+            dropdownElement.style.opacity = '1';
+            dropdownElement.style.pointerEvents = 'auto';
+        }
+    }
+
+    // Function to close a dropdown (desktop specific)
+    function closeDropdown(dropdownElement) {
+        if (dropdownElement) {
+            dropdownElement.style.transform = 'translate3d(0px, -500px, 0px)';
+            dropdownElement.style.opacity = '0';
+            dropdownElement.style.pointerEvents = 'none';
+        }
+    }
+
+    // Named event handlers for easier adding/removing
+    function handleFlotillasClick(event) {
+        event.stopPropagation();
+        if (window.getComputedStyle(flotillasDropdown).opacity === '0') {
+            openDropdown(flotillasDropdown);
+            closeDropdown(contactoDropdown);
+        } else {
+            closeDropdown(flotillasDropdown);
+        }
+    }
+
+    function handleContactoClick(event) {
+        event.stopPropagation();
+        if (window.getComputedStyle(contactoDropdown).opacity === '0') {
+            openDropdown(contactoDropdown);
+            closeDropdown(flotillasDropdown);
+        } else {
+            closeDropdown(contactoDropdown);
+        }
+    }
+
+    function handleDocumentClick(event) {
+        if (!navbar.contains(event.target)) {
+            closeDropdown(flotillasDropdown);
+            closeDropdown(contactoDropdown);
+        }
+    }
+
+    // Function to set up desktop-specific event listeners and initial state
+    function setupDesktopMenuBehavior() {
+        if (isDesktopBehaviorActive) return;
+
+        flotillasTrigger.addEventListener('click', handleFlotillasClick);
+        contactoTrigger.addEventListener('click', handleContactoClick);
+        document.addEventListener('click', handleDocumentClick);
+
+        closeDropdown(flotillasDropdown); // Ensure initially closed for desktop
+        closeDropdown(contactoDropdown); // Ensure initially closed for desktop
+
+        isDesktopBehaviorActive = true;
+        console.log("Desktop menu behavior ENABLED.");
+    }
+
+    // Function to tear down desktop-specific event listeners and reset styles
+    function teardownDesktopMenuBehavior() {
+        if (!isDesktopBehaviorActive) return;
+
+        flotillasTrigger.removeEventListener('click', handleFlotillasClick);
+        contactoTrigger.removeEventListener('click', handleContactoClick);
+        document.removeEventListener('click', handleDocumentClick);
+
+        // Reset inline styles applied by this script
+        if (flotillasDropdown) {
+            flotillasDropdown.style.transform = '';
+            flotillasDropdown.style.opacity = '';
+            flotillasDropdown.style.pointerEvents = '';
+        }
+        if (contactoDropdown) {
+            contactoDropdown.style.transform = '';
+            contactoDropdown.style.opacity = '';
+            contactoDropdown.style.pointerEvents = '';
+        }
+
+        isDesktopBehaviorActive = false;
+        console.log("Desktop menu behavior DISABLED and styles reset.");
+    }
+
+    // Function to check current window width and apply/remove behavior
+    function checkAndApplyBehavior() {
+        if (window.innerWidth >= MIN_WIDTH) {
+            setupDesktopMenuBehavior();
+        } else {
+            teardownDesktopMenuBehavior();
+        }
+    }
+
+    // --- Initial setup and responsiveness ---
+    checkAndApplyBehavior();
+
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(checkAndApplyBehavior, 100);
+    });
+});
+</script>
